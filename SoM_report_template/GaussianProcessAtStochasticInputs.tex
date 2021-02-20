@@ -1,0 +1,53 @@
+\section{GP at Stochastic Inputs}
+    In this section we will introduce GP evaluations at random inputs as described in \cite{Paper2:UncertainInputPredictions,Paper3:GPPriorsWithUncertainInputs}. This is important in real word applications. Sensors and actuators and therefore signals are mostly subject to noise. Assuming that the input $x_*$ is a random variable its distribution could e.g. be describes by a Gaussian distribution $x_* \sim \mathcal N(\mu_x_*, \sigma_x_*)$. The goal will be to find the distribution $\mathbb f_*$ given the distribution of $x_*$ and the data $\mathcal D$.  In the previous section the posterior distribution of $\mathbb f_*$ was introduced. Here we can write it as $p(\mathbb f_*|x_*,\mathcal D)$ where we have to assume $x_*$ to be given. By integrating over the entire input distribution one finds
+    \begin{equation}
+        \label{eq:posterior_distribution}
+        \begin{split}
+        p\left(f_{*} \mid \mu_x_*, \sigma_x_*, \mathcal{D}\right)=\\
+        \int p\left(f_{*} \mid x_{*}, \mathcal{D}\right) p\left({x}_{*} \mid \mu_x_*, \sigma_x_*\right) d {x}_{*}.
+        \end{split}
+    \end{equation}
+    Unfortunately the resultant distribution can only be evaluated numerically as no closed-form solution exists. In this section we will introduce the common ways of approximating (\ref{eq:posterior_distribution}). They can be split into multiple categories. Firstly we will introduce the ground-truth solution, followed by a procedure that uses the weight-space interpretation. Thirdly the distribution (\ref{eq:posterior_distribution}) can assumed to be Gaussian and the following mean and variance can be estimated with a Taylor expansion. Doing this jointly for the entire trajectory instead of each step iteratively will lead to decent approximation that takes the propagation of uncertainty into account.
+\subsection{Ground Truth Trajectory Sampling}
+    A numerical scheme proposed in \cite{Paper4:TrajecotryPrediction_Taylorexpansion} for sampling from this distribution for the scalar autonomous system case (\ref{eq:scalarautonomous}) will be presented here. It will act as a benchmark to all the other sampling based approximations following later in the text. The analogue here to the joint distribution (\ref{eq:general_joint_gaussian}) is
+    \begin{equation}
+        \footnotesize
+        \setlength{\arraycolsep}{2.5pt}
+        \medmuskip = 1mu % default: 4mu plus 2mu minus 4mu
+        \scriptscriptstyle
+        \centering
+        \left[\begin{array}{c}
+        x_{1} \\
+        \vdots \\
+        x_{k+1}
+        \end{array}\right] \sim 
+        \mathcal N \left(
+        \left[\begin{array}{c}
+        \mu\left(x_{0}\right) \\
+        \vdots \\
+        \mu\left(x_{k}\right)
+        \end{array}\right] , {\left[\begin{array}{ccc}
+        k\left(x_{0}, x_{0}\right)+\sigma ^2 & \ldots & k(x_0,x_k) \\
+        \vdots & \ddots & \vdots \\
+        k(x_k,x_0)  & \ldots & k\left(x_{k}, x_{k}\right)+\sigma ^2
+        \end{array}\right]} \right).
+    \end{equation}
+    For a first given value $x_0$ the next step can simply be sampled from $x_1 \sim \mathcal N(\mu(x_0),k(x_0,x_0)+\sigma^2)$ with $ x_{1}=\mu\left(x_{0}\right)+\sqrt{k\left(x_{0}, x_{0}\right)+\sigma^2} \  \tilde{w}_{0} $ where $\tile{w_0}$ is drawn from a standard normal distribution. The joint distribution can then be grown one step and $x_0$ and $x_1$ sampled from it. This can be generalized to the step $k+1$ with
+    \begin{equation}
+    \label{eq:groundtruth}
+    X_{1: k+1}=\mu\left(X_{0: k}\right)+\sqrt{k\left(X_{0: k}, X_{0: k}\right)+I \sigma^2} \tilde{W}_{0: k+1}
+    \end{equation}
+    where $\tilde{W}_{0: k+1}$ is drawn from a multi dimensional standard normal distribution and $\sqrt{\cdot}$ is the Cholesky decomposition. This procedure is computationally very expensive as it scales cubically $\mathcal O(N^3)$ with the prediction horizon $N$. But this approach gives accurate samples from the distribution (\ref{eq:posterior_distribution}) as no simplifying assumptions were made.
+ \subsection{Approximating Samples with Basis Functions}
+    The weight-space interpretation of a GP described in \cite{Paper5:PriorPosteriorSplit} serves as an interesting alternative to the function-space interpretation and can in this case be used to approximate function samples from a posterior. Let $\phi_i(x)$ be a $l$-dimensional finite set of basis functions. The GP approximation then takes the form
+    \begin{equation}
+        f\left({x}\right)=\sum_{i=1}^{l} \theta_i \phi_i(x).
+    \end{equation}
+    Inference is here done on the weight distribution of $\theta$. Choosing a prior distribution as $\theta \sim \mathcal N (0,\Sigma_p)$ the posterior distribution $\theta|y\sim \mathcal N (\mu_\theta,\Sigma_\theta)$ of the weights is described with
+    \begin{equation}
+        \begin{aligned}
+            {\mu_\theta}&=\left({\Phi}^{\top} {\Phi}+\sigma^{2} {I}\right)^{-1} {\Phi}^{\top} {y} \\
+            {\Sigma_\theta}  &=\left({\Phi}^{\top} {\Phi}+\sigma^{2} {I}\right)^{-1} \sigma^{2}.
+        \end{aligned}    
+    \end{equation}
+    where $\Phi = \phi(X)$. Drawing from the posterior is cheap as it scales linearly with the number of function evaluations. Unfortunately this approach also underestimates the propagation of uncertainty.

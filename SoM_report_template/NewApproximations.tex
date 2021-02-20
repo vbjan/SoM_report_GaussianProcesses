@@ -1,0 +1,27 @@
+\section{State-of-the-Art Approximations}
+    In this section we will summarize the current state-of-the-art approximation of (\ref{eq:posterior_distribution}). A split of the posterior into the prior and an update as a function of the prior will allow for a combination of both the weight-space interpretation with its cheap evaluations of the prior and the accurate representation of the uncertainty with the function space interpretation. This will again be a sampling approach to the problem.
+\subsection{Splitting Posterior}
+    To combine these advantages of the weight-space interpretation and the function-space interpretation paper \cite{Paper5:PriorPosteriorSplit} introduces a split of the posterior. According to Matheron's rule one can sample from a conditional distribution $a|b$ by first sampling the two random variables $a$ and $b$ from the joint distribution and then use the update for
+    $$
+    ({a} \mid {b}={\beta}) ={a}+\operatorname{Cov}({a}, {b}) \operatorname{Cov}({b}, {b})^{-1}({\beta}-{b}).
+    $$
+    This can analogously be done for the posterior distribution of a GP with
+    \begin{equation}
+        \scriptstyle
+        \label{eq:updatefunctionspaceview}
+        \underbrace{f_* | y}_{\text {posterior}}
+        =
+        \underbrace{f_*}_{\text {prior}}
+        +
+        \underbrace{k_*^T(K+\sigma ^2I)^{-1}(y-f-\epsilon)}_{\text {update}}.
+    \end{equation}
+    Substituting the prior $f_*$ in (\ref{eq:updatefunctionspaceview}) with the prior from the weight-space interpretation $\phi(x)^T\theta$ where $\theta$ is sampled from a normal distribution will reduce the computational burden and not result in less accuracy. Computing the Cholesky for the prior which scales with $\mathcal O (N^3)$ with prediction horizon $N$ is not necessary anymore.
+     \begin{equation}
+     \label{eq:GPPosteriorSplit}
+        \underbrace{f_* | y}_{\text {posterior}}
+        \approx
+        \underbrace{\sum_{j=1}^{l}\phi_j(x_*)\theta_j }_{\text {prior}}
+        +
+        \underbrace{\sum_{i=1}^{N}v_i k(x_*,x_i)}_{\text {update}}
+    \end{equation}
+    where $v_i$ are the components of $V = (K(X,X)+\sigma^2I)^{-1}(y-\Phi \theta -\epsilon)$. This presents a very potent approximation because it scales with $\mathcal O (N)$ and results in very accurate representations of the uncertainty which are almost identical to the ground truth. The computational burden can be reduced further by using a \textit{sparse} GP approximation with a set of $M$ inducing points \cite{Paper5:PriorPosteriorSplit}. An additional benefit is that this expression can be differentiated which is not possible for the standard GP. This is due to the fact that the prior is a linear combination of functions.

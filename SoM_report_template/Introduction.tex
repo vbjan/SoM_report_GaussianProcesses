@@ -1,0 +1,10 @@
+\section{Introduction}
+\label{s:Introduction}
+We will start by introducing the mathematics behind Gaussian Processes and the respective function-space and weight-space interpretations. After introducing the mathematics and giving an intuition for the assumptions underlying the formulation, the report will continue by focusing on the evaluation at stochastic inputs, which will result in an expression for a probability distribution of which no closed form solution exists \cite{Paper2:UncertainInputPredictions,Paper3:GPPriorsWithUncertainInputs}. \newline
+
+Solving this equation numerically is computationally infeasible. This issue will then be viewed from different perspectives. Firstly we will introduce the conventional approaches of approximating the stochastic evaluations seen in \cite{Paper4:TrajecotryPrediction_Taylorexpansion} and highlight their downsides. Using a Gaussian approximation and Taylor expansion \cite{Paper2:UncertainInputPredictions} will result in relatively good approximations of the mean and variance of predictions. Alternatively approaching the problem of finding the probability distribution by sampling, will open the door for other approximations using both the function-space and weight-space interpretation \cite{Paper4:TrajecotryPrediction_Taylorexpansion}. Combining these will in the end result in satisfactory results, that significantly improve on the understatement of uncertainty and high computational burden \cite{Paper5:PriorPosteriorSplit}. In this report we will lay special focus on time-series prediction of the scalar autonomous system  
+\begin{equation}
+    \label{eq:scalarautonomous}
+     x_{k+1} = f(x_k) + w_k  
+\end{equation}
+where $w$ is noise with $w \sim \mathcal N (0,\sigma_w^2)$. The summarized concepts can be formulated and used for more general cases as well though.

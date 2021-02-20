@@ -1,0 +1,181 @@
+\section{Gaussian Approximation with Taylor expansion}
+          To simplify expression (\ref{eq:groundtruth}) the authors of paper \cite{Paper2:UncertainInputPredictions} assume the distribution to be Gaussian and compute its mean and variance. By using the law of iterated expectation values and the law of iterative variances one gets
+        \begin{equation}
+        \label{expGaussianApprox}
+            %m(x_*) := 
+            \mathbb{E}_{\mathbf{f}_*}\left[ 
+            \mathbf{f}_*
+            \right]
+            =
+            \mathbb{E}_{x_*}\left[ 
+            \mathbb{E}_{\mathbf f_*}\left[\mathbf{f}_{*}|x_*\right] 
+            \right]
+            =
+            \mathbb{E}_{x_*}\left[ 
+            \mu(x_*)
+            \right ]    
+        \end{equation}
+        \begin{equation}
+        \begin{split}
+        \label{varGaussianApprox}
+            %v(x_*):=
+            \mathbb{V}_{\mathbf{f}_*}\left[ 
+            \mathbf{f}_*
+            \right]
+            =
+            \mathbb{E}_{x_*}\left[ 
+            \mathbb{V}_{\mathbf{f}_*}\left[ 
+            \mathbf{f}_* | x_*
+            \right]
+            \right]
+            +
+            \mathbb{V}_{x_*}\left[ 
+            \mathbb{E}_{\mathbf f_*}\left[\mathbf{f}_{*}|x_*\right] 
+            \right]
+            =\\
+            \mathbb{E}_{x_*}\left[ 
+            \Sigma(x_*)
+            \right]
+            +
+            \mathbb{V}_{x_*}\left[ 
+            \mu(x_*)
+            \right].
+        \end{split}
+        \end{equation}
+    \subsection{Independence Assumption}
+        Evaluating these expressions is still not trivial. Preceding to derive a simpler expression for the scalar autonomous case  (\ref{eq:scalarautonomous}) with a first order Taylor expansion of $\mathbb{E}\left[ x_{k+1}\right ]$ and a zeroth order Taylor expansion of $ \mathbb{V}\left[ x_{k+1} \right ]$
+        %$\mu(x_k) \approx \mu(\mu_{x_k}) + \nabla \mu(\mu_{x_k})(x_k - \mu_{x_k})$ 
+        will yield 
+        \begin{equation}
+        \label{meantaylorexpofgaussianapprox}
+        \begin{split}
+            \mathbb{E}\left[ 
+            x_{k+1}
+            \right ]
+            =
+            \mathbb{E}\left[ 
+            \mu(x_{k})
+            \right ]
+            +
+            \mathbb{E}\left[ 
+            w_k
+            \right ]
+            \approx \\
+            \mathbb{E}\left[ 
+            \mu(\mu_{x_k})+\nabla \mu(\mu_{x_k})(x_k-\mu_{x_k})
+            \right ]
+            =
+            \mu(\mu_{x_k}).
+        \end{split}
+        \end{equation}
+        \begin{equation}
+        \label{variancetaylorexpofgaussianapprox}
+        \begin{split}
+            \mathbb{V}\left[ 
+            x_{k+1}
+            \right ]
+            =
+            \mathbb{E}\left[ 
+            \Sigma(x_k)
+            \right ]
+            +
+            \mathbb{V}\left[ 
+            \mu(x_k)
+            \right ]
+            + \sigma_w^2
+            \approx \\
+            \Sigma(\mu_{x_k})+\sigma_w^2
+            %\mathbb{V}\left[ 
+            %x_{k+1}
+            %\right ]
+            %=
+            %\mathbb{V}\left[ 
+            %f(x_k)+w_k
+            %right ]
+            %\approx 
+            %(\nabla f(\mu_{x_k}))^2 \mathbb{V}\left[ x_{k} \right ] \\
+            %+ 2 (\nabla f(\mu_{x_k}))^2 Cov(x_k,w_k) 
+            % \mathbb{V}\left[ 
+            %_k \right ]
+        \end{split}
+        \end{equation}
+        These equations describe the mean and variance of each of the random variables $x_i$. This can then be jointly written to lead to a naive approximation of (\ref{eq:groundtruth})
+        \begin{equation}
+        \label{naiveapprox}
+            \footnotesize
+            \setlength{\arraycolsep}{2.5pt}
+            \medmuskip = 1mu % default: 4mu plus 2mu minus 4mu
+            \centering
+            \scriptscriptstyle
+            \left[\scriptscriptstyle{\begin{array}{c}
+            x_{1} \\
+            \vdots \\
+            x_{k+1}
+            \end{array}}\right] \sim 
+            \mathcal N \left(
+            \left[\begin{array}{c}
+            \mu\left(x_{0}\right) \\
+            \vdots \\
+            \mu\left(\mu_{k}\right)
+            \end{array}\right] ,
+            {\left[\begin{array}{ccc}
+            k\left(x_{0}, x_{0}\right)+\sigma ^2 & \ldots & 0 \\
+            \vdots & \ddots & \vdots \\
+            0  & \ldots & k\left(\mu_{k}, \mu_{k}\right)+\sigma ^2
+            \end{array}\right]} \right).
+        \end{equation}
+        Higher order Taylor expansions can be used for more accuracy but will increase the computational cost. Sampling from this distribution can again be done with a Cholesky similarly to (\ref{eq:groundtruth}). The sampling is cheap, does not require the iterative approach and the predictive mean is accurate. The major downside is that it underestimates the uncertainty of times-steps past the first because the propagation of uncertainty is not accounted for as can be seen from the off-diagonal parts being all zero.
+    
+    \subsection{Dropping the Independence Assumption}
+            The same idea of linearization applied to the sampling based approach (\ref{eq:groundtruth}) is presented in \cite{Paper4:TrajecotryPrediction_Taylorexpansion}. As mentioned the first sample will be accurate with $ x_{1}=\mu\left(x_{0}\right)+\sqrt{k\left(x_{0}, x_{0}\right)+\sigma^2} \  \tilde{w}_{0} $. The following iterations will be costly due to the recalculation of the Cholesky decomposition for every time step though. So by jointly linearing $\mu(x)$ in
+        \begin{equation}
+        \label{twostepsgroundtruth}
+        \footnotesize
+        \setlength{\arraycolsep}{2.5pt}
+        \medmuskip = 1mu % default: 4mu plus 2mu minus 4mu
+        \centering
+            \scriptscriptstyle
+            \left[\begin{array}{c}
+            x_{1} \\
+            x_{2}
+            \end{array}\right] = \left[\begin{array}{c}
+            \mu\left(x_{0}\right) \\
+            \mu\left(x_{1}\right)
+            \end{array}\right] + \sqrt{
+            \left[\begin{array}{ll}k(x_0, x_0) + \sigma ^2 & k\left(x_0, x_1\right) \\ k\left(x_1, x_0\right) & k\left(x_1, x_1\right)+\sigma ^2\end{array}\right]}
+            \left[\begin{array}{c}
+            \tilde{w_0} \\
+            \tilde{w_1}
+            \end{array}\right]
+        \end{equation}
+        around $\mu_1 = \mu(x_0)$ so that $\mu(x_1) = \mu(\mu_1) + \nabla \mu(\mu_1)(x_1-\mu_1)$ one gets
+        \begin{equation}
+        \label{linearized ground truth}
+        \footnotesize
+        \scriptscriptstyle
+        \setlength{\arraycolsep}{0.3pt}
+        \medmuskip = 1mu % default: 4mu plus 2mu minus 4mu
+        \centering
+            \left[\begin{array}{l}
+            x_{1} \\
+            x_{2}
+            \end{array}\right] \approx\left[\begin{array}{c}
+            \mu_{1} \\
+            \mu\left(\mu_{1}\right)
+            \end{array}\right]+\left[\begin{array}{cc}
+            I & 0 \\
+            \nabla \mu\left(\mu_{1}\right) & I
+            \end{array}\right]
+            \sqrt{
+            \left[\begin{array}{ll}k(x_0, x_0) + \sigma ^2 & k\left(x_0, \mu_1\right) \\ k\left(\mu_1, x_0\right) & k\left(\mu_1, \mu_1\right)+\sigma ^2\end{array}\right]}
+            \left[\begin{array}{c}
+            \tilde{w_0} \\
+            \tilde{w_1}
+            \end{array}\right].
+        \end{equation}
+        The means $\mu_1$ and $\mu_2$ can now be used to iteratively expand the procedure to further time-steps. Generalizing the notation for N time-steps leads to 
+        \begin{equation}
+        \label{generalized linearization of ground truth}
+            X_{1: N} \approx M_{1: N}+A \sqrt{k\left(M_{0: N-1}, M_{0: N-1}\right)+I \sigma^2} \tilde{W}.
+        \end{equation}
+        with $\tilde W $ being sampled from a $N $ dimensional standard normal distribution, $M = [\mu_0,...,\mu_N]^T$ and $A_{i, j}=\prod_{l=j}^{i-1} \nabla \mu\left(\mu_{l}\right)$. This approach does account for the propagating of uncertainty as can be seen in the structure of the covariance matrix which is not diagonal. It furthermore scales quadratically $\mathcal O(N^2)$ with the prediction horizon $N$ compared to the ground truth sampling which scales cubically.
